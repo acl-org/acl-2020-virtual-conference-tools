@@ -3,7 +3,7 @@ import csv
 
 import pandas as pd
 
-from scripts.paper_import import (
+from acl2020_tools.utils.paper_import import (
     clean_abstract,
     clean_title,
     miniconf_join_list,
