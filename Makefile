@@ -1,3 +1,5 @@
+PYTHON_FILES = acl2020_tools/ tests/
+
 .PHONY: format format-check
 
 all: format-check

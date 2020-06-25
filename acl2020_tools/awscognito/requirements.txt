@@ -5,3 +5,5 @@ boto3
 pandas
 xlrd >= 1.0.0
 openpyxl
+
+PyYAML
