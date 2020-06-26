@@ -1,7 +1,6 @@
 # pylint: disable=global-statement,redefined-outer-name
 """ Script used to create|disable AWS Cognito user """
 import argparse
-import os
 import sys
 from dataclasses import dataclass
 from typing import Any, Dict
