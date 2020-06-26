@@ -54,29 +54,23 @@ def main():
         *track_details["slot2"].map(extract_date)
     )
 
-    session_time_map = defaultdict(lambda: {"date": "", "posters": []})
+    session_time_map = defaultdict(lambda: {"date": "", "papers": []})
 
     volume = str(args.volume)
 
     for row in track_details.itertuples():
         session_time_map[row.Session1]["date"] = row.Date1
-        session_time_map[row.Session1]["posters"].append(
-            {
-                "id": volume + "." + str(row.LineOrder),
-                "join_link": "https://www.google.com/",
-            }
+        session_time_map[row.Session1]["papers"].append(
+            volume + "." + str(row.LineOrder)
         )
         session_time_map[row.Session2]["date"] = row.Date2
-        session_time_map[row.Session2]["posters"].append(
-            {
-                "id": volume + "." + str(row.LineOrder),
-                "join_link": "https://www.google.com/",
-            }
+        session_time_map[row.Session2]["papers"].append(
+            volume + "." + str(row.LineOrder)
         )
 
     # Sort everything
     for session_info in session_time_map.values():
-        session_info["posters"].sort(key=lambda x: int(x["id"].split(".")[1]))
+        session_info["papers"].sort(key=lambda x: int(x.split(".")[1]))
     dict_items = list(session_time_map.items())
     dict_items.sort(key=lambda x: x[1]["date"])
     ordered_sessions = dict(dict_items)
