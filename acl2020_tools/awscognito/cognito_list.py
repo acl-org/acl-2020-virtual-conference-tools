@@ -1,12 +1,12 @@
 # pylint: disable=global-statement,redefined-outer-name
 """ Script used to list AWS Cognito users """
 import argparse
-import sys
 from dataclasses import asdict, dataclass
 
-import boto3
 import pandas
 import yaml
+
+import cognito
 
 
 @dataclass(frozen=True)
@@ -22,55 +22,17 @@ class User:
     #     return f"{self.first_name} {self.last_name}"
 
 
-def list_users(client, profile):
-    """ Deletes a user from the pool """
-    try:
-        response = client.list_users(
-            UserPoolId=profile["user_pool_id"],
-            # AttributesToGet=['email']
-        )
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            print("Get Users successfully")
-            return response["Users"]
-
-    except client.exceptions.ClientError as error:
-        print("Fail to list users")
-        print(error)
-        sys.exit(2)
-
-    return []
-
-
 def load_data(aws_profile, is_debug=False):
     """ Load the profile data and get pool user """
     profile = yaml.load(open(aws_profile).read(), Loader=yaml.SafeLoader)
-
-    # Prepare the AWS client
-    client = boto3.client(
-        "cognito-idp",
-        aws_access_key_id=profile["access_key_id"],
-        aws_secret_access_key=profile["secret_access_key"],
-        region_name=profile["region_name"],
-    )
-    aws_users = list_users(client, profile)
+    client = cognito.init_client(profile)
     result = []
-    for aws_user in aws_users:
-        email: str = ""
-        name: str = ""
-        enabled = aws_user["Enabled"]
 
-        # We assume all users with 'custom:name' attribute is created by our scripts
-        for attr in aws_user["Attributes"]:
-            attr_name = attr["Name"]
-            if attr_name == "email":
-                email = attr["Value"]
-            elif attr_name == "custom:name":
-                name = attr["Value"]
-
-        if name:
-            if is_debug:
-                print(f"user: {name} <{email}>, enabled: {enabled}")
-            result.append(User(name=name, email=email))
+    users = cognito.list_users(client, profile)
+    for user in users:
+        if is_debug:
+            print(f"user: {user.name()} <{user.email}>, enabled: {user.enabled}")
+        result.append(User(name=user.name(), email=user.email))
 
     return result
 
@@ -95,7 +57,7 @@ def parse_arguments():
 def save_file(users, file_path):
     """ Save user information to the xlsx file """
     dataframe = pandas.DataFrame([asdict(x) for x in users])
-    dataframe.to_excel(file_path)
+    dataframe.to_csv(file_path, index=False)
     print(f"User information is written to {file_path}")
 
 
@@ -103,4 +65,4 @@ if __name__ == "__main__":
     args = parse_arguments()
     users = load_data(args.aws_profile, args.debug)
 
-    save_file(users, "all_users.xlsx")
+    save_file(users, "all_users.csv")

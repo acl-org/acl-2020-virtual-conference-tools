@@ -5,9 +5,10 @@ import sys
 from dataclasses import dataclass
 from typing import Any, Dict
 
-import boto3
 import pandas
 import yaml
+
+import cognito
 
 
 @dataclass(frozen=True)
@@ -28,92 +29,11 @@ class User:
         return f"{self.first_name} {self.last_name}"
 
 
-def create_user(client, profile, user):
-    """ Creates a new user in the specified user pool """
-    try:
-        response = client.admin_create_user(
-            UserPoolId=profile["user_pool_id"],
-            Username=user.email,
-            UserAttributes=[
-                {"Name": "email", "Value": user.email},
-                {"Name": "email_verified", "Value": "true"},
-                {"Name": "custom:name", "Value": user.name()},
-            ],
-        )
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            print(f"User {user.email} was created successfully")
-        return response
-    except client.exceptions.UsernameExistsException as error:
-        print(f"User {user.email} exists")
-        return error.response
-    except client.exceptions.ClientError as error:
-        print(f"Fail to create user {user.email}")
-        return error.response
-
-
-def delete_user(client, profile, user):
-    """ Deletes a user from the pool """
-    try:
-        response = client.admin_delete_user(
-            UserPoolId=profile["user_pool_id"], Username=user.email
-        )
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            print(f"User {user.email} was deleted successfully")
-        return response
-    except client.exceptions.UserNotFoundException as error:
-        print(f"User {user.email} does not exist")
-        return error.response
-    except client.exceptions.ClientError as error:
-        print(f"Fail to delete user {user.email}")
-        return error.response
-
-
-def disable_user(client, profile, user):
-    """ Disables the specified user """
-    try:
-        response = client.admin_disable_user(
-            UserPoolId=profile["user_pool_id"], Username=user.email
-        )
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            print(f"User {user.email} was disabled successfully")
-        return response
-    except client.exceptions.UserNotFoundException as error:
-        print(f"User {user.email} does not exist")
-        return error.response
-    except client.exceptions.ClientError as error:
-        print(f"Fail to disable user {user.email}")
-        return error.response
-
-
-def enable_user(client, profile, user):
-    """ Enables the specified user """
-    try:
-        response = client.admin_enable_user(
-            UserPoolId=profile["user_pool_id"], Username=user.email
-        )
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            print(f"User {user.email} was enabled successfully")
-        return response
-    except client.exceptions.UserNotFoundException as error:
-        print(f"User {user.email} does not exist")
-        return error.response
-    except client.exceptions.ClientError as error:
-        print(f"Fail to disable user {user.email}")
-        return error.response
-
-
 def load_data(user_file, aws_profile):
     """ Load the profile data and user data """
     data: Dict[str, Any] = {}
     data["profile"] = yaml.load(open(aws_profile).read(), Loader=yaml.SafeLoader)
-
-    # Prepare the AWS client
-    data["client"] = boto3.client(
-        "cognito-idp",
-        aws_access_key_id=data["profile"]["access_key_id"],
-        aws_secret_access_key=data["profile"]["secret_access_key"],
-        region_name=data["profile"]["region_name"],
-    )
+    data["client"] = cognito.init_client(data["profile"])
 
     # Prepare the user information
     failed, users, message = parse_file(user_file)
@@ -139,6 +59,14 @@ def parse_arguments():
         action="store_true",
         default=False,
         help="Check the files without actually making the reqeust",
+    )
+    group.add_argument(
+        "-a",
+        "--assign-group",
+        action="store",
+        dest="group",
+        default=False,
+        help="Assign users listed in the file to specified group",
     )
     group.add_argument(
         "-d",
@@ -205,12 +133,14 @@ if __name__ == "__main__":
     elif args.disable:
         # Disable user
         for user in data["users"]:
-            disable_user(data["client"], data["profile"], user)
+            cognito.disable_user(data["client"], data["profile"], user)
     elif args.enable:
-        # ENable user
+        # Enable user
         for user in data["users"]:
-            enable_user(data["client"], data["profile"], user)
+            cognito.enable_user(data["client"], data["profile"], user)
     else:
         # Create user
         for user in data["users"]:
-            create_user(data["client"], data["profile"], user)
+            cognito.create_user(data["client"], data["profile"], user)
+            if args.group:
+                cognito.add_to_group(data["client"], data["profile"], user, args.group)
