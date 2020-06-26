@@ -16,9 +16,26 @@ reset their passwords.
 ./verify_user_email.sh username@example.com
 ```
 
-* Create user(s) from .xlsx or .csv file.  This will set `email_verified` to true as well
+* List available group(s) from AWS cognito
+```bash
+python cognito_groups.py -l aws_profile.yml
+```
+
+* Disable/Enable group user(s) 
+```bash
+python cognito_groups.py -d group_name aws_profile.yml
+python cognito_groups.py -e group_name aws_profile.yml
+```
+
+* List all user(s) from AWS cognito and write the list to `all_users.csv`
+```bash
+python cognito_list.py aws_profile.yml
+```
+
+* Create user(s) from .xlsx or .csv file.  This will set `email_verified` to true as well.  The second example will add user(s) to the specified group
 ```bash
 python cognito_users.py user.csv aws_profile.yml
+python cognito_users.py -a group_name user.csv aws_profile.yml
 ```
 
 * To check/disable/enable user(s) from .xlsx or .csv file.
