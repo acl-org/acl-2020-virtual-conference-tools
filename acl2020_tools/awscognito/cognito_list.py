@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 import pandas
 import yaml
 
-import cognito
+import cognito  # type: ignore
 
 
 @dataclass(frozen=True)

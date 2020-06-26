@@ -6,7 +6,7 @@ from typing import Any, Dict
 
 import yaml
 
-import cognito
+import cognito  # type: ignore
 
 
 @dataclass(frozen=True)

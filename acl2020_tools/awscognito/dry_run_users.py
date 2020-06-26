@@ -8,7 +8,7 @@ from typing import Any, Dict
 import pandas
 import yaml
 
-import cognito
+import cognito  # type: ignore
 
 
 @dataclass(frozen=True)
