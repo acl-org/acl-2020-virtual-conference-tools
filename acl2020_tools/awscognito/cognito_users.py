@@ -1,6 +1,7 @@
 # pylint: disable=global-statement,redefined-outer-name
 """ Script used to create|disable AWS Cognito user """
 import argparse
+import os
 import sys
 from dataclasses import dataclass
 from typing import Any, Dict
@@ -96,7 +97,8 @@ def parse_file(path):
     error_message = ""
     users = []
 
-    _, ext = path.split("/")[-1].split(".")
+    results = path.split("/")[-1].split(".")
+    ext = results[-1]
     if ext == "xlsx":
         dataframe = pandas.read_excel(path)
     elif ext == "csv":
