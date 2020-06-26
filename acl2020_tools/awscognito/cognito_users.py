@@ -96,7 +96,8 @@ def parse_file(path):
     error_message = ""
     users = []
 
-    _, ext = path.split("/")[-1].split(".")
+    results = path.split("/")[-1].split(".")
+    ext = results[-1]
     if ext == "xlsx":
         dataframe = pandas.read_excel(path)
     elif ext == "csv":
