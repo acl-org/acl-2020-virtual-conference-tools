@@ -55,7 +55,8 @@ https://forums.rocket.chat/t/anyone-auth0-sso-experience/2060/6
 
 `make_poster_rooms.py` -> for creating a chat room for each poster.
 `dump_users.py` -> generate a CSV of data for all users on the server.
-`add_users_to_channel.py` -> bulk add users to channels from CSV/Excel file. Requires columns "email" and "channel".
+`add_users_to_channel.py` -> bulk add users to channels from CSV/Excel file (requires columns "email" and "channel"). Uses output of `list_channels.py`.
+`add_all_users_to_channels.py` -> bulk add all users to given channels. Uses output of `list_channels.py`.
 
 `list_channels.py` -> for exporting channels into a CSV with regex name search and a `featured` filter (see CLI options). For example, for featured channels not containing the word `paper`:
 
