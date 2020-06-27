@@ -22,24 +22,22 @@ import argparse
 import csv
 from datetime import datetime, timedelta
 
-import yaml
 import pandas as pd
+import yaml
 
 
 def get_alternative_hosts(paper_id: str) -> str:
-    prefix, idx = paper_id.split('.')
+    prefix, idx = paper_id.split(".")
     assert prefix in ["main", "demo", "srw", "cl", "tacl"]
     assert int(idx) > 0
     return f"acl2020zoom+{prefix}-{idx}@gmail.com"
 
 
-def main(papers_csv: str, sessions_yml: str, session_duration: int, outbase: str) -> None:
+def main(
+    papers_csv: str, sessions_yml: str, session_duration: int, outbase: str
+) -> None:
     papers_df = pd.read_csv(
-        papers_csv,
-        sep=',',
-        encoding='utf-8',
-        na_values=None,
-        keep_default_na=False
+        papers_csv, sep=",", encoding="utf-8", na_values=None, keep_default_na=False
     )
     papers_df.set_index("UID", inplace=True, drop=True, verify_integrity=True)
 
@@ -54,68 +52,54 @@ def main(papers_csv: str, sessions_yml: str, session_duration: int, outbase: str
         end_time_str = end_time.strftime("%m/%d/%Y %H:%M:%S")
         for paper_id in session_info["papers"]:
             paper = papers_df.loc[paper_id]
-            rows.append({
-                "id": paper_id,
-                "uniqueid": f"{paper_id}.{session_name}",
-                "alternative_hosts": get_alternative_hosts(paper_id),
-                "starttime": start_time_str,
-                "endtime": end_time_str,
-                "timezone": "UTC",
-                "type": "",
-                "meeting_or_webinar": "",
-                "panelists": "",
-                "title": paper.get("title"),
-                "abstract": paper.get("abstract"),
-                "authorString": paper.get("authors"),
-                "zoomid": "",
-                "join_link": "",
-                "start_link": "",
-            })
+            rows.append(
+                {
+                    "id": paper_id,
+                    "uniqueid": f"{paper_id}.{session_name}",
+                    "alternative_hosts": get_alternative_hosts(paper_id),
+                    "starttime": start_time_str,
+                    "endtime": end_time_str,
+                    "timezone": "UTC",
+                    "type": "",
+                    "meeting_or_webinar": "",
+                    "panelists": "",
+                    "title": paper.get("title"),
+                    "abstract": paper.get("abstract"),
+                    "authorString": paper.get("authors"),
+                    "zoomid": "",
+                    "join_link": "",
+                    "start_link": "",
+                }
+            )
     data_df = pd.DataFrame(sorted(rows, key=lambda x: int(x["id"].split(".")[-1])))
 
     unique_ids = data_df.loc[:, "uniqueid"].tolist()
     assert len(unique_ids) == len(set(unique_ids))
 
     data_df.to_csv(
-        outbase + ".tsv",
-        sep='\t',
-        index=False,
-        encoding='utf-8',
-        quoting=csv.QUOTE_ALL
+        outbase + ".tsv", sep="\t", index=False, encoding="utf-8", quoting=csv.QUOTE_ALL
     )
     data_df.to_excel(
-        outbase + ".xlsx",
-        index=False,
+        outbase + ".xlsx", index=False,
     )
 
 
-if __name__ == '__main__':
-    cmdline_parser = argparse.ArgumentParser(
-        description=__doc__
-    )
+if __name__ == "__main__":
+    cmdline_parser = argparse.ArgumentParser(description=__doc__)
+    cmdline_parser.add_argument("--papers_csv", help="papers csv file")
+    cmdline_parser.add_argument("--sessions_yml", help="sessions yaml file")
     cmdline_parser.add_argument(
-        '--papers_csv',
-        help='papers csv file'
-    )
-    cmdline_parser.add_argument(
-        '--sessions_yml',
-        help='sessions yaml file'
-    )
-    cmdline_parser.add_argument(
-        '--session_duration',
+        "--session_duration",
         type=int,
         choices=[45, 60],
-        help='session duration (in minutes)'
+        help="session duration (in minutes)",
     )
-    cmdline_parser.add_argument(
-        '--outbase',
-        help='output file basename'
-    )
+    cmdline_parser.add_argument("--outbase", help="output file basename")
     args = cmdline_parser.parse_args()
 
     main(
         papers_csv=args.papers_csv,
         sessions_yml=args.sessions_yml,
         session_duration=args.session_duration,
-        outbase=args.outbase
+        outbase=args.outbase,
     )
