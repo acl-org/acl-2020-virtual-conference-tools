@@ -46,12 +46,16 @@ python qa_schedule_import.py --volume 1
 * Image-Extraction: https://github.com/Mini-Conf/image-extraction for pulling images from PDF files. 
 
 
-* Create files for Zoom python scripts
-```bash
-python -m acl2020_tools.utils.create_zoom_schedule \
-    --papers_csv sitedata_acl2020/main_papers.csv \
-    --sessions_yml sitedata_acl2020/main_paper_sessions.yml \
-    --session_duration 60 \
-    --outbase var/main_paper_schedule
-```
+### Zoom
+* Generate random passwords for host accounts.
+    ```bash
+    ```
+* Create files for Zoom python scripts.
+    ```bash
+    python -m acl2020_tools.utils.create_zoom_schedule \
+        --papers_csv sitedata_acl2020/main_papers.csv \
+        --sessions_yml sitedata_acl2020/main_paper_sessions.yml \
+        --session_duration 60 \
+        --outbase var/main_paper_schedule
+    ```
 
