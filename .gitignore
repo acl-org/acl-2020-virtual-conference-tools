@@ -138,5 +138,7 @@ node_modules/
 .DS_Store
 
 # RocketChat credentials and output files
-acl2020_tools/chat/config.yml
-acl2020_tools/chat/channels.csv
+/acl2020_tools/chat/config.yml
+/acl2020_tools/chat/channels.csv
+
+/sitedata_acl2020
