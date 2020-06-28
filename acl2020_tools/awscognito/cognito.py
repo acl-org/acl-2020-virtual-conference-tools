@@ -21,6 +21,7 @@ class CognitoUser:
     username: str
     email: str
     custom_name: str = ""
+    email_verified: str = ""
     enabled: bool = True
 
     def name(self) -> str:
@@ -31,6 +32,7 @@ class CognitoUser:
 def __convert_aws_user__(aws_user):
     email: str = ""
     custom_name: str = ""
+    email_verified: str = ""
     enabled = aws_user["Enabled"]
     username = aws_user["Username"]
     for attr in aws_user["Attributes"]:
@@ -38,9 +40,15 @@ def __convert_aws_user__(aws_user):
             email = attr["Value"]
         elif attr["Name"] == "custom:name":
             custom_name = attr["Value"]
+        elif attr["Name"] == "email_verified":
+            email_verified = attr["Value"]
 
     user = CognitoUser(
-        username=username, email=email, custom_name=custom_name, enabled=enabled,
+        username=username,
+        email=email,
+        custom_name=custom_name,
+        enabled=enabled,
+        email_verified=email_verified,
     )
     return user
 
@@ -216,3 +224,22 @@ def list_users(client, profile):
         sys.exit(2)
 
     return result
+
+
+def update_user_attributes(client, profile, user, attr_name, attr_value):
+    """ Updates the specified user's attribute """
+    try:
+        response = client.admin_update_user_attributes(
+            UserPoolId=profile["user_pool_id"],
+            Username=user.email,
+            UserAttributes=[{"Name": attr_name, "Value": attr_value}],
+        )
+        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+            print(f"User {user.email} was updated successfully")
+        return response
+    except client.exceptions.UserNotFoundException as error:
+        print(f"User {user.email} does not exist")
+        return error.response
+    except client.exceptions.ClientError as error:
+        print(f"Fail to disable user {user.email}")
+        return error.response

@@ -31,7 +31,9 @@ def load_data(aws_profile, is_debug=False):
     users = cognito.list_users(client, profile)
     for user in users:
         if is_debug:
-            print(f"user: {user.name()} <{user.email}>, enabled: {user.enabled}")
+            print(
+                f"user: {user.name()} <{user.email}>, enabled: {user.enabled}, email_verified: {user.email_verified}"
+            )
         result.append(User(name=user.name(), email=user.email))
 
     return result
