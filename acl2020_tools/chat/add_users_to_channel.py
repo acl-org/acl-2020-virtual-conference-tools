@@ -27,6 +27,11 @@ def parse_arguments():
         default="user-to-channels.csv",
         help="List of users and channels to add them to (CSV or Excel)",
     )
+    parser.add_argument(
+        "--set-owner",
+        action="store_true",
+        help="Set all users as the owner of the channel they're added to.",
+    )
     parser.add_argument("--test", action="store_true", help="Do dry run")
     return parser.parse_args()
 
@@ -55,13 +60,27 @@ def find_user_id(email, user_dump):
 
 
 def add_user_to_channel(user_data, rocket, test):
-    user_id = user_data["user_id"]
-    email = user_data["email"]
-    channel = user_data["channel_name"]
-    channel_id = user_data["channel_id"]
     if not test:
-        rocket.channels_invite(roomId=channel_id, userId=user_id)
-    print("Added user {} to channel {}".format(email, channel))
+        rocket.channels_invite(
+            roomId=user_data["channel_id"], userId=user_data["user_id"]
+        )
+    print(
+        "Added user {} to channel {}".format(
+            user_data["email"], user_data["channel_name"]
+        )
+    )
+
+
+def set_user_as_owner(user_data, rocket, test):
+    if not test:
+        rocket.channels_add_owner(
+            roomId=user_data["channel_id"], userId=user_data["user_id"]
+        )
+    print(
+        "Set user {} as owner of channel {}".format(
+            user_data["email"], user_data["channel_name"]
+        )
+    )
 
 
 def main():
@@ -107,6 +126,11 @@ def main():
         users_with_channel_ids.apply(
             lambda x: add_user_to_channel(x, rocket, args.test), axis=1
         )
+
+        if args.set_owner:
+            users_with_channel_ids.apply(
+                lambda x: set_user_as_owner(x, rocket, args.test), axis=1
+            )
 
 
 if __name__ == "__main__":
