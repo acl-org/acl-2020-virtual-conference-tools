@@ -4,12 +4,13 @@ to a schedule file that can be used to create Zoom links.
 Output file columns:
 - id: the id of the paper (e.g., main.1)
 - uniqueid: the unique Id of the link (e.g., main.1.3A)
-- alternative_hosts: alternative hosts account, should be acl2020zoom+{uniqueid}@gmail.com
-- starttime: in the format of "%m/%d/%Y %H:%M:%S" (e.g., 07/06/2020 05:00:00)
-- endtime: in the format of "%m/%d/%Y %H:%M:%S"
+- host_zoom_user_email: should be acl2020zoom+main-1@gmail.com
+- alternative_hosts: should be acl2020zoom@gmail.com
+- starttime: in the format of "%Y-%m-%dT%H:%M:%SZ" (e.g., 2020-07-06T05:00:00Z)
+- endtime: in the format of "%Y-%m-%dT%H:%M:%SZ" (e.g., 2020-07-06T05:00:00Z)
 - timezone: UTC (we hard code it because it is used in the ?_paper_sessions.yml by default)
 - type: keep it empty
-- meeting_or_webinar: keep it empty
+- meeting_or_webinar: should be "meeting"
 - panelists: keep it empty
 - title: the title of the paper
 - abstract: the abstract of the paper
@@ -26,7 +27,7 @@ import pandas as pd
 import yaml
 
 
-def get_alternative_hosts(paper_id: str) -> str:
+def get_host_user_email(paper_id: str) -> str:
     prefix, idx = paper_id.split(".")
     assert prefix in ["main", "demo", "srw", "cl", "tacl"]
     assert int(idx) > 0
@@ -48,20 +49,21 @@ def main(
     for session_name, session_info in sessions.items():
         start_time = datetime.strptime(session_info["date"], "%Y-%m-%d_%H:%M:%S")
         end_time = start_time + timedelta(minutes=session_duration)
-        start_time_str = start_time.strftime("%m/%d/%Y %H:%M:%S")
-        end_time_str = end_time.strftime("%m/%d/%Y %H:%M:%S")
+        start_time_str = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        end_time_str = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
         for paper_id in session_info["papers"]:
             paper = papers_df.loc[paper_id]
             rows.append(
                 {
                     "id": paper_id,
                     "uniqueid": f"{paper_id}.{session_name}",
-                    "alternative_hosts": get_alternative_hosts(paper_id),
+                    "host_zoom_user_email": get_host_user_email(paper_id),
+                    "alternative_hosts": "acl2020zoom@gmail.com",
                     "starttime": start_time_str,
                     "endtime": end_time_str,
                     "timezone": "UTC",
                     "type": "",
-                    "meeting_or_webinar": "",
+                    "meeting_or_webinar": "meeting",
                     "panelists": "",
                     "title": paper.get("title"),
                     "abstract": paper.get("abstract"),
