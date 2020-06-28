@@ -38,12 +38,13 @@ python cognito_users.py user.csv aws_profile.yml
 python cognito_users.py -a group_name user.csv aws_profile.yml
 ```
 
-* To check/disable/enable user(s) from .xlsx or .csv file.
+* To check/disable/enable and set `email_verified` to true for user(s) from .xlsx or .csv file.
 
 ```bash
 python cognito_users.py --check user.csv aws_profile.yml
 python cognito_users.py -d user.csv aws_profile.yml
 python cognito_users.py -e user.csv aws_profile.yml
+python cognito_users.py -v user.csv aws_profile.yml
 ```
 
 * Get help message of using cognito_users.py
@@ -52,17 +53,19 @@ python cognito_users.py -e user.csv aws_profile.yml
 python cognito_users.py -h
 ```
 
-* Create dry run user(s) from .xlsx or .csv file.  This will set `email_verified` to true as well
+* Create dry run user(s) from .xlsx or .csv file.  This will set `email_verified` to true as well.  The second example will add user(s) to the specified group
 ```bash
 python dry_run_users.py user.csv aws_profile.yml
+python dry_run_users.py -a group_name user.csv aws_profile.yml
 ```
 
-* To check/disable/enable user(s) from .xlsx or .csv file.
+* To check/disable/enable and set `email_verified` to true for user(s) from .xlsx or .csv file.
 
 ```bash
 python dry_run_users.py --check user.csv aws_profile.yml
 python dry_run_users.py -d user.csv aws_profile.yml
 python dry_run_users.py -e user.csv aws_profile.yml
+python dry_run_users.py -v user.csv aws_profile.yml
 ```
 
 * Get help message of using dry_run_users.py
