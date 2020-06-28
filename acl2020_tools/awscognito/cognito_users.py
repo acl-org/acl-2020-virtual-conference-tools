@@ -82,6 +82,13 @@ def parse_arguments():
         default=False,
         help="Enable users listed in the file",
     )
+    group.add_argument(
+        "-v",
+        "--verified",
+        action="store_true",
+        default=False,
+        help="Set email_verified for users listed in the file",
+    )
     parser.add_argument(
         "user_file", help="The file contains user information for AWS Cognito",
     )
@@ -96,8 +103,7 @@ def parse_file(path):
     error_message = ""
     users = []
 
-    results = path.split("/")[-1].split(".")
-    ext = results[-1]
+    _, ext = path.split("/")[-1].split(".")
     if ext == "xlsx":
         dataframe = pandas.read_excel(path)
     elif ext == "csv":
@@ -139,6 +145,12 @@ if __name__ == "__main__":
         # Enable user
         for user in data["users"]:
             cognito.enable_user(data["client"], data["profile"], user)
+    elif args.verified:
+        # Set email_verified for user
+        for user in data["users"]:
+            cognito.update_user_attributes(
+                data["client"], data["profile"], user, "email_verified", "true"
+            )
     else:
         # Create user
         for user in data["users"]:
