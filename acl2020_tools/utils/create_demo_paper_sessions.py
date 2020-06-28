@@ -67,12 +67,14 @@ def main(demo_papers_xlsx: str, output_file: str, calendar_json: str):
         {
             "title": f"Demo Session {item[0][1:]}",
             "start": item[1]["date"].strftime("%Y-%m-%dT%H:%M:%S+00:00"),
-            "end": (item[1]["date"] + timedelta(minutes=45)).strftime("%Y-%m-%dT%H:%M:%S+00:00"),
+            "end": (item[1]["date"] + timedelta(minutes=45)).strftime(
+                "%Y-%m-%dT%H:%M:%S+00:00"
+            ),
             "location": "",
             "link": f"papers.html?session={item[0]}",
             "category": "time",
             "calendarId": "---",
-            "type": "QA Sessions"
+            "type": "QA Sessions",
         }
         for item in dict_items
     ]
@@ -85,7 +87,7 @@ def main(demo_papers_xlsx: str, output_file: str, calendar_json: str):
 
     with open(calendar_json, "w") as f:
         f.write(json.dumps(calendar_items, indent=2))
-        f.write('\n')
+        f.write("\n")
 
 
 def parse_arguments():
@@ -96,9 +98,7 @@ def parse_arguments():
     cmdline_parser.add_argument(
         "--output-file", help="output demo_paper_sessions.yml file"
     )
-    cmdline_parser.add_argument(
-        "--calendar-json", help="output calender json file"
-    )
+    cmdline_parser.add_argument("--calendar-json", help="output calender json file")
     return cmdline_parser.parse_args()
 
 
