@@ -15,7 +15,7 @@ import string
 
 import pandas as pd
 
-from acl2020_tools.utils.create_zoom_schedule import get_alternative_hosts
+from acl2020_tools.utils.create_zoom_schedule import get_host_user_email
 
 LOWERCASE_LETTERS = list(string.ascii_lowercase)
 UPPERCASE_LETTERS = list(string.ascii_uppercase)
@@ -40,7 +40,7 @@ def main(papers_csv: str, outbase: str) -> None:
     paper_ids = papers_df.loc[:, "UID"].tolist()
     assert len(paper_ids) == len(set(paper_ids))
 
-    usernames = [get_alternative_hosts(paper_id) for paper_id in paper_ids]
+    usernames = [get_host_user_email(paper_id) for paper_id in paper_ids]
     passwords = [generate_random_password() for _ in paper_ids]
 
     df = pd.DataFrame({"UID": paper_ids, "username": usernames, "passwords": passwords})
