@@ -23,7 +23,7 @@ def parse_arguments():
         "--channels",
         "-i",
         default="./channels.csv",
-        help="Input channels csv or excel filepath. Must contain a _id column. "
+        help="Input channels csv or excel filepath. Must contain an '_id' column. "
         "Default: ./channels.csv",
     )
     return parser.parse_args()
