@@ -91,4 +91,5 @@ if __name__ == "__main__":
             data["client"], data["profile"], args.group_to_enable
         )
         for user in users:
-            cognito.enable_user(data["client"], data["profile"], user)
+            print(user)
+        #     cognito.enable_user(data["client"], data["profile"], user)

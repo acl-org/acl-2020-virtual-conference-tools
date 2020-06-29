@@ -98,7 +98,7 @@ def create_user(client, profile, user):
         print(f"User {user.email} exists")
         return error.response
     except client.exceptions.ClientError as error:
-        print(f"Fail to create user {user.email}: {error.response}")
+        print(f"Fail to create user {user.email}")
         return error.response
 
 
@@ -163,16 +163,27 @@ def init_client(profile):
     return client
 
 
-def list_group_users(client, profile, group_name):
+def list_group_users(client, profile, group_name, token=""):
     result = []
     try:
-        response = client.list_users_in_group(
-            UserPoolId=profile["user_pool_id"], GroupName=group_name
-        )
+        if token:
+            response = client.list_users_in_group(
+                UserPoolId=profile["user_pool_id"],
+                GroupName=group_name,
+                NextToken=token,
+            )
+        else:
+            response = client.list_users_in_group(
+                UserPoolId=profile["user_pool_id"], GroupName=group_name,
+            )
         if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
             aws_users = response["Users"]
             for aws_user in aws_users:
                 result.append(__convert_aws_user__(aws_user))
+            next_token = response.get("NextToken")
+            if next_token:
+                more = list_group_users(client, profile, group_name, next_token)
+                result.extend(more)
     except client.exceptions.ResourceNotFoundException as error:
         print(f"Group {group_name} does not exist")
         sys.exit(2)
@@ -205,18 +216,24 @@ def list_groups(client, profile):
     return result
 
 
-def list_users(client, profile):
+def list_users(client, profile, token=""):
     """ Lists all user from the pool """
     result = []
     try:
-        response = client.list_users(
-            UserPoolId=profile["user_pool_id"],
-            # AttributesToGet=['email']
-        )
+        if token:
+            response = client.list_users(
+                UserPoolId=profile["user_pool_id"], PaginationToken=token,
+            )
+        else:
+            response = client.list_users(UserPoolId=profile["user_pool_id"],)
         if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
             aws_users = response["Users"]
             for aws_user in aws_users:
                 result.append(__convert_aws_user__(aws_user))
+            next_token = response.get("PaginationToken")
+            if next_token:
+                more = list_users(client, profile, next_token)
+                result.extend(more)
 
     except client.exceptions.ClientError as error:
         print("Fail to list users")
