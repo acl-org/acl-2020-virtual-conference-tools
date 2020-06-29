@@ -20,7 +20,7 @@ def parse_arguments():
     parser.add_argument(
         "--output_file",
         "-o",
-        default="channels.csv",
+        default="./channels.csv",
         help="Output csv filepath. Default: ./channels.csv",
     )
     parser.add_argument(
@@ -91,11 +91,12 @@ if __name__ == "__main__":
         )
         channels_params = get_params(args.filter_featured, args.regexp)
 
+        count = 50  # number of channels per page (default 50)
         channels_list: List[Dict] = []
-        channels_json = rocket.channels_list(**channels_params).json()
+        channels_json = rocket.channels_list(count=count, **channels_params).json()
         channels_list.extend(channels_json["channels"])
 
-        count, total = 50, channels_json["total"]
+        total = channels_json["total"]
         print(f"Found {total} channels")
 
         for offset in tqdm(range(count, total, count)):

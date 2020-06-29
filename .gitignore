@@ -139,6 +139,6 @@ node_modules/
 
 # RocketChat credentials and output files
 /acl2020_tools/chat/config.yml
-/acl2020_tools/chat/channels.csv
+/acl2020_tools/chat/*.csv
 
 /sitedata_acl2020
