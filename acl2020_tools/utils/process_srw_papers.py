@@ -6,6 +6,10 @@ import pandas as pd
 from acl2020_tools.utils.paper_import import clean_abstract, clean_title
 
 
+def clean_authors(authors):
+    return "|".join([author.strip() for author in authors.split("|")])
+
+
 def main(srw_papers_csv: str, srw_ids_xlsx: str, output_file: str):
     srw_papers_df = pd.read_csv(
         srw_papers_csv, sep=",", encoding="utf-8", na_values=None, keep_default_na=False
@@ -14,6 +18,7 @@ def main(srw_papers_csv: str, srw_ids_xlsx: str, output_file: str):
     srw_ids_df.set_index("SubID", inplace=True, drop=True, verify_integrity=True)
     sub_ids = [int(row.get("UID")[4:]) for _, row in srw_papers_df.iterrows()]
     srw_papers_df["abstract"] = srw_papers_df["abstract"].apply(clean_abstract)
+    srw_papers_df["authors"] = srw_papers_df["authors"].apply(clean_authors)
     srw_papers_df["title"] = srw_papers_df["title"].apply(clean_title)
     srw_papers_df["pdf_url"] = srw_ids_df.loc[sub_ids].loc[:, "Anthology link"].tolist()
 
