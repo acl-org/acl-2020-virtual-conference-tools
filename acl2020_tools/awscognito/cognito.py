@@ -98,7 +98,7 @@ def create_user(client, profile, user):
         print(f"User {user.email} exists")
         return error.response
     except client.exceptions.ClientError as error:
-        print(f"Fail to create user {user.email}")
+        print(f"Fail to create user {user.email}: {error.response}")
         return error.response
 
 
