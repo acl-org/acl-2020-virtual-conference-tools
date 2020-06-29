@@ -59,12 +59,12 @@ if __name__ == "__main__":
         channels_df = read_channels(args.channels_file)
         filename = args.channels_file.split("/")[-1]
         print(
-            f"Found {len(channels_df)} channel(s) in {filename}, "
-            "proceed to clear messages? [y/n]"
+            f"Found {len(channels_df)} channel(s) in {filename}. "
+            "Proceed to clear messages? [y/n]"
         )
         confirmation = input().strip().lower()
         if confirmation == "y":
-            print("Clearing messages")
+            print("Clearing messages...")
 
             error_channels = []
             # Can make dates configurable if necessary
@@ -73,7 +73,6 @@ if __name__ == "__main__":
                 response = rocket.rooms_clean_history(
                     room_id=channel_id, latest=latest, oldest=oldest
                 ).json()
-                pprint.pprint(response)
                 if not response["success"]:
                     if response["errorType"] == "error-not-allowed":
                         print("You don't have permissions to perform this action")
