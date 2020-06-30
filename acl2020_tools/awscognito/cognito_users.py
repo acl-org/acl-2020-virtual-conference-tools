@@ -60,6 +60,12 @@ def parse_arguments():
         default=False,
         help="Check the files without actually making the reqeust",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Show error details if there is any",
+    )
     group.add_argument(
         "-a",
         "--assign-group",
@@ -140,20 +146,27 @@ if __name__ == "__main__":
     elif args.disable:
         # Disable user
         for user in data["users"]:
-            cognito.disable_user(data["client"], data["profile"], user)
+            response = cognito.disable_user(data["client"], data["profile"], user)
+            cognito.show_error_response(response, args.debug)
     elif args.enable:
         # Enable user
         for user in data["users"]:
-            cognito.enable_user(data["client"], data["profile"], user)
+            response = cognito.enable_user(data["client"], data["profile"], user)
+            cognito.show_error_response(response, args.debug)
     elif args.verified:
         # Set email_verified for user
         for user in data["users"]:
-            cognito.update_user_attributes(
+            response = cognito.update_user_attributes(
                 data["client"], data["profile"], user, "email_verified", "true"
             )
+            cognito.show_error_response(response, args.debug)
     else:
         # Create user
         for user in data["users"]:
-            cognito.create_user(data["client"], data["profile"], user)
+            response = cognito.create_user(data["client"], data["profile"], user)
+            cognito.show_error_response(response, args.debug)
             if args.group:
-                cognito.add_to_group(data["client"], data["profile"], user, args.group)
+                response = cognito.add_to_group(
+                    data["client"], data["profile"], user, args.group
+                )
+                cognito.show_error_response(response, args.debug)
