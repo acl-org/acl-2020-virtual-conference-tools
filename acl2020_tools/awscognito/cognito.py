@@ -1,5 +1,6 @@
 # pylint: disable=global-statement,redefined-outer-name
 """ Script used to create|disable AWS Cognito user """
+import json
 import sys
 from dataclasses import dataclass
 
@@ -98,7 +99,7 @@ def create_user(client, profile, user):
         print(f"User {user.email} exists")
         return error.response
     except client.exceptions.ClientError as error:
-        print(f"Fail to create user {user.email}")
+        print(f"Fail to create user {user.email}: {error.response}")
         return error.response
 
 
@@ -260,3 +261,11 @@ def update_user_attributes(client, profile, user, attr_name, attr_value):
     except client.exceptions.ClientError as error:
         print(f"Fail to disable user {user.email}")
         return error.response
+
+
+def show_error_response(response, is_show=False):
+    if is_show:
+        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+            # json_string = json.dumps(response, indent=4)
+            json_string = json.dumps(response.get("Error"), indent=4)
+            print(json_string)
