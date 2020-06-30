@@ -41,7 +41,7 @@ def load_data(user_file, aws_profile):
 def parse_arguments():
     """ Parse Arguments """
     parser = argparse.ArgumentParser(
-        description="AWS Cognito User Command Line",
+        description="AWS Cognito User (dry-run format) Command Line",
         # usage="cognito_user.py [-h] [--check] [-d|-e] user_file aws_profile",
     )
     group = parser.add_mutually_exclusive_group()
@@ -78,6 +78,14 @@ def parse_arguments():
         action="store_true",
         default=False,
         help="Enable users listed in the file",
+    )
+    group.add_argument(
+        "-r",
+        "--remove",
+        action="store",
+        dest="remove_from_group",
+        default=False,
+        help="Remove users listed in the file from specified group",
     )
     group.add_argument(
         "-v",
@@ -145,6 +153,13 @@ if __name__ == "__main__":
         # Enable user
         for user in data["users"]:
             response = cognito.enable_user(data["client"], data["profile"], user)
+            cognito.show_error_response(response, args.debug)
+    elif args.remove_from_group:
+        # Remove users from group
+        for user in data["users"]:
+            response = cognito.remove_from_group(
+                data["client"], data["profile"], user, args.remove_from_group
+            )
             cognito.show_error_response(response, args.debug)
     elif args.verified:
         # Enable user

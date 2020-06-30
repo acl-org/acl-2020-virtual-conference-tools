@@ -27,15 +27,28 @@ python cognito_groups.py -d group_name aws_profile.yml
 python cognito_groups.py -e group_name aws_profile.yml
 ```
 
-* List all user(s) from AWS cognito and write the list to `all_users.csv`
+* List all user(s) from AWS cognito and write the list to `all_users.csv`.  The second example will list all user(s) of specified group (and write the list to `all_group_name.csv`.
 ```bash
 python cognito_list.py aws_profile.yml
+python cognito_list.py -g group_name aws_profile.yml 
 ```
 
-* Create user(s) from .xlsx or .csv file.  This will set `email_verified` to true as well.  The second example will add user(s) to the specified group
+* Get help message of using cognito_list.py
+
+```bash
+python cognito_list.py -h
+```
+
+* Reset user(s) password
+```bash
+python cognito_reset_password.py aws_profile.yml example1@gmail.com example2@gmail.com ...
+```
+
+* Create user(s) from .xlsx or .csv file.  This will set `email_verified` to true as well.  The second example will add user(s) to the specified group.  The last one removes user(s) from the specified group.
 ```bash
 python cognito_users.py user.csv aws_profile.yml
 python cognito_users.py -a group_name user.csv aws_profile.yml
+python cognito_users.py -r group_name user.csv aws_profile.yml
 ```
 
 * To check/disable/enable and set `email_verified` to true for user(s) from .xlsx or .csv file.
@@ -53,10 +66,11 @@ python cognito_users.py -v user.csv aws_profile.yml
 python cognito_users.py -h
 ```
 
-* Create dry run user(s) from .xlsx or .csv file.  This will set `email_verified` to true as well.  The second example will add user(s) to the specified group
+* Create dry run user(s) from .xlsx or .csv file.  This will set `email_verified` to true as well.  The second example will add user(s) to the specified group.  The last one removes user(s) from the specified group
 ```bash
 python dry_run_users.py user.csv aws_profile.yml
 python dry_run_users.py -a group_name user.csv aws_profile.yml
+python dry_run_users.py -r group_name user.csv aws_profile.yml
 ```
 
 * To check/disable/enable and set `email_verified` to true for user(s) from .xlsx or .csv file.

@@ -1,5 +1,5 @@
 # pylint: disable=global-statement,redefined-outer-name
-""" Script used to create|disable AWS Cognito user """
+""" Module to wrap AWS Cognito APIs """
 import json
 import sys
 from dataclasses import dataclass
@@ -76,24 +76,35 @@ def add_to_group(client, profile, user, group_name):
         return error.response
 
 
-def create_user(client, profile, user):
+def create_user(client, profile, user, resend=False):
     """ Creates a new user in the specified user pool """
     try:
         if callable(user.name):
             name = user.name()
         else:
             name = user.name
-        response = client.admin_create_user(
-            UserPoolId=profile["user_pool_id"],
-            Username=user.email,
-            UserAttributes=[
-                {"Name": "email", "Value": user.email},
-                {"Name": "email_verified", "Value": "true"},
-                {"Name": "custom:name", "Value": name},
-            ],
-        )
+        if resend:
+            # Resend confirmation email for get back password
+            response = client.admin_create_user(
+                UserPoolId=profile["user_pool_id"],
+                Username=user.email,
+                MessageAction="RESEND",
+            )
+        else:
+            response = client.admin_create_user(
+                UserPoolId=profile["user_pool_id"],
+                Username=user.email,
+                UserAttributes=[
+                    {"Name": "email", "Value": user.email},
+                    {"Name": "email_verified", "Value": "true"},
+                    {"Name": "custom:name", "Value": name},
+                ],
+            )
         if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            print(f"User {user.email} was created successfully")
+            if resend:
+                print(f"Resend confirmation to user {user.email} successfully")
+            else:
+                print(f"User {user.email} was created successfully")
         return response
     except client.exceptions.UsernameExistsException as error:
         print(f"User {user.email} exists")
@@ -165,6 +176,7 @@ def init_client(profile):
 
 
 def list_group_users(client, profile, group_name, token=""):
+    """ Lists all user from the specified group """
     result = []
     try:
         if token:
@@ -185,11 +197,11 @@ def list_group_users(client, profile, group_name, token=""):
             if next_token:
                 more = list_group_users(client, profile, group_name, next_token)
                 result.extend(more)
-    except client.exceptions.ResourceNotFoundException as error:
+    except client.exceptions.ResourceNotFoundException:
         print(f"Group {group_name} does not exist")
         sys.exit(2)
     except client.exceptions.ClientError as error:
-        print(error)
+        print(error.response)
         print("Fail to list groups")
         sys.exit(2)
 
@@ -218,7 +230,7 @@ def list_groups(client, profile):
 
 
 def list_users(client, profile, token=""):
-    """ Lists all user from the pool """
+    """ Lists all users from the pool """
     result = []
     try:
         if token:
@@ -244,6 +256,71 @@ def list_users(client, profile, token=""):
     return result
 
 
+def remove_from_group(client, profile, user, group_name):
+    """ Removes the specified user from the specified group """
+    try:
+        response = client.admin_remove_user_from_group(
+            UserPoolId=profile["user_pool_id"],
+            Username=user.email,
+            GroupName=group_name,
+        )
+        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+            print(f"User {user.email} removed from the group {group_name}")
+        return response
+    except client.exceptions.UserNotFoundException as error:
+        print(f"User {user.email} does not exist")
+        return error.response
+    except client.exceptions.ResourceNotFoundException as error:
+        print(f"Group {group_name} does not exist")
+        return error.response
+    except client.exceptions.ClientError as error:
+        print(f"Fail to remove user {user.email} from group {group_name}")
+        return error.response
+
+
+def reset_user_password(client, profile, user):
+    """ Resets the specified user's password """
+    try:
+        response = set_user_password(client, profile, user)
+        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+            # Resend confirmation
+            response = create_user(client, profile, user, True)
+            print(f"Password of user {user.email} was reset successfully")
+        return response
+    except client.exceptions.ClientError as error:
+        print(f"Fail to reset password of user {user.email}")
+        return error.response
+
+
+def set_user_password(client, profile, user, password="N0t-permanent!"):
+    """ Sets the specified user's password """
+    try:
+        response = client.admin_set_user_password(
+            UserPoolId=profile["user_pool_id"],
+            Username=user.email,
+            Password=password,
+            Permanent=False,
+        )
+        # if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+        #     print(f"Password of user {user.email} was set successfully")
+        return response
+    except client.exceptions.UserNotFoundException as error:
+        print(f"User {user.email} does not exist")
+        return error.response
+    except client.exceptions.ClientError as error:
+        print(f"Fail to reset password of user {user.email}")
+        return error.response
+
+
+def show_error_response(response, is_show=False):
+    """ Show error message if any """
+    if is_show:
+        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+            # json_string = json.dumps(response, indent=4)
+            json_string = json.dumps(response.get("Error"), indent=4)
+            print(json_string)
+
+
 def update_user_attributes(client, profile, user, attr_name, attr_value):
     """ Updates the specified user's attribute """
     try:
@@ -261,11 +338,3 @@ def update_user_attributes(client, profile, user, attr_name, attr_value):
     except client.exceptions.ClientError as error:
         print(f"Fail to disable user {user.email}")
         return error.response
-
-
-def show_error_response(response, is_show=False):
-    if is_show:
-        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-            # json_string = json.dumps(response, indent=4)
-            json_string = json.dumps(response.get("Error"), indent=4)
-            print(json_string)

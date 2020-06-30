@@ -61,7 +61,7 @@ def parse_arguments():
         "--list-groups",
         action="store_true",
         default=False,
-        help="Disable users listed in the file",
+        help="List available group(s) in the pool",
     )
     parser.add_argument("aws_profile", help="The file contains AWS profile")
 
