@@ -9,25 +9,29 @@ import pandas as pd
 
 
 OUTPUT_COLUMNS = [
-    "paper_uid",
-    "submission_id",
-    "rocketchat_channel",
-    "zoom_host_email",
-    "zoom_host_password",
-    "session_name_for_slot_1",
-    "zoom_start_link_for_slot_1",
-    "zoom_join_link_for_slot_1",
-    "session_name_for_slot_2",
-    "zoom_start_link_for_slot_2",
-    "zoom_join_link_for_slot_2",
+    "Submission ID",
+    "Note 0",  # "paper_url"
+    "Note 1",  # "rocketchat_channel"
+    "Note 2",  # "zoom_host_email"
+    "Note 3",  # "zoom_host_password"
+    "Note 4",  # "zoom_start_link_for_slot_1"
+    "Note 5",  # "zoom_join_link_for_slot_1"
+    "Note 6",  # "zoom_start_link_for_slot_2"
+    "Note 7",  # "zoom_join_link_for_slot_2"
     # these two fields are used for sanity check
-    "_title",
-    "_author_emails"
+    # "session_name_for_slot_1
+    # "session_name_for_slot_2",
+    # "_title",
+    # "_author_emails"
 ]
 
 
+def get_webpage_url(paper_uid: str) -> str:
+    return f"https://virtual.acl2020.org/paper_{paper_uid}.html"
+
+
 def get_rockectchat_channel(paper_uid: str) -> str:
-    return f"paper-{paper_uid.replace('.', '-')}"
+    return f"https://acl2020.rocket.chat/channel/paper-{paper_uid.replace('.', '-')}"
 
 
 def get_submission_id(paper_uid: str, submission_id: Optional[str]) -> str:
@@ -92,20 +96,28 @@ def main(accounts_tsv: str, schedule_csv: str, outbase: str) -> None:
                 "join_link": "",
             })
 
+        # "Note 0",  # "paper_url"
+        # "Note 1",  # "rocketchat_channel"
+        # "Note 2",  # "zoom_host_email"
+        # "Note 3",  # "zoom_host_password"
+        # "Note 4",  # "zoom_start_link_for_slot_1"
+        # "Note 5",  # "zoom_join_link_for_slot_1"
+        # "Note 6",  # "zoom_start_link_for_slot_2"
+        # "Note 7",  # "zoom_join_link_for_slot_2"
         output_row = {
-            "paper_uid": uid,
-            "submission_id": get_submission_id(uid, session_infos[0].get("submission_id")),
-            "rocketchat_channel": get_rockectchat_channel(uid),
-            "zoom_host_email": username,
-            "zoom_host_password": password,
-            "session_name_for_slot_1": session_infos[0]["session_name"],
-            "zoom_start_link_for_slot_1": session_infos[0]["start_link"],
-            "zoom_join_link_for_slot_1": session_infos[0]["join_link"] ,
-            "session_name_for_slot_2": session_infos[1]["session_name"],
-            "zoom_start_link_for_slot_2": session_infos[1]["start_link"],
-            "zoom_join_link_for_slot_2": session_infos[1]["join_link"],
-            "_title": session_infos[0]["title"],
-            "_author_emails": session_infos[0]["author_emails"],
+            "Submission ID": get_submission_id(uid, session_infos[0].get("submission_id")),
+            "Note 0": get_webpage_url(uid),
+            "Note 1": get_rockectchat_channel(uid),
+            "Note 2": username,
+            "Note 3": password,
+            "Note 4": session_infos[0]["start_link"],
+            "Note 5": session_infos[0]["join_link"],
+            "Note 6": session_infos[1]["start_link"],
+            "Note 7": session_infos[1]["join_link"],
+            # "_session_name_for_slot_1": session_infos[0]["session_name"],
+            # "_session_name_for_slot_2": session_infos[1]["session_name"],
+            # "_title": session_infos[0]["title"],
+            # "_author_emails": session_infos[0]["author_emails"],
         }
         output_rows.append(output_row)
 
@@ -131,7 +143,6 @@ def main(accounts_tsv: str, schedule_csv: str, outbase: str) -> None:
         encoding='utf-8',
         columns=OUTPUT_COLUMNS
     )
-
 
 
 if __name__ == '__main__':
