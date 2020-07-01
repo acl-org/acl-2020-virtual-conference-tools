@@ -26,7 +26,7 @@ def parse_arguments():
 
     parser.add_argument(
         "--add_owners",
-        action='store_true',
+        action="store_true",
         help="Add owners of each channel. Default: False",
     )
     parser.add_argument(
@@ -65,6 +65,7 @@ def postprocess(channels: pd.DataFrame) -> pd.DataFrame:
 
     return channels
 
+
 def add_owners(channels: pd.DataFrame, rocket: RocketChat) -> pd.DataFrame:
     channels["owners"] = None
 
@@ -77,7 +78,7 @@ def add_owners(channels: pd.DataFrame, rocket: RocketChat) -> pd.DataFrame:
                 user_roles = ret.json()["roles"]
 
                 for user_role in user_roles:
-                    if 'owner' in user_role["roles"]:
+                    if "owner" in user_role["roles"]:
                         owners.append(user_role["u"]["username"])
 
                 channels.loc[idx, "owners"] = ",".join(owners)
@@ -86,12 +87,20 @@ def add_owners(channels: pd.DataFrame, rocket: RocketChat) -> pd.DataFrame:
                 print(ret.status_code, ret.reason)
     return channels
 
+
 def get_params(filter_featured: bool = False, regexp: str = None) -> Dict[str, str]:
     # t: channel type (d: Direct chat, c: Chat, p: Private chat, l: Livechat)
     # msgs: number of messages
     fields = [
-        "name", "msgs", "usersCount", "featured", "t", "topic",
-        "description", "announcement", "_updatedAt"
+        "name",
+        "msgs",
+        "usersCount",
+        "featured",
+        "t",
+        "topic",
+        "description",
+        "announcement",
+        "_updatedAt",
     ]
 
     query: Dict[str, Any] = {}
