@@ -9,7 +9,8 @@ import pandas as pd
 
 
 OUTPUT_COLUMNS = [
-    "paper_id",  # should be the submission ID
+    "paper_uid",
+    "submission_id",
     "rocketchat_channel",
     "zoom_host_email",
     "zoom_host_password",
@@ -39,7 +40,7 @@ def get_submission_id(paper_uid: str, submission_id: Optional[str]) -> str:
     if paper_uid.startswith("main."):
         assert submission_id is not None
         return submission_id
-    return paper_uid
+    return paper_uid.split('.')[1]
 
 
 def main(accounts_tsv: str, schedule_csv: str, outbase: str) -> None:
@@ -92,7 +93,8 @@ def main(accounts_tsv: str, schedule_csv: str, outbase: str) -> None:
             })
 
         output_row = {
-            "paper_id": get_submission_id(uid, session_infos[0].get("submission_id")),
+            "paper_uid": uid,
+            "submission_id": get_submission_id(uid, session_infos[0].get("submission_id")),
             "rocketchat_channel": get_rockectchat_channel(uid),
             "zoom_host_email": username,
             "zoom_host_password": password,
