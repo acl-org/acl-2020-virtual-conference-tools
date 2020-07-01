@@ -71,7 +71,7 @@ def add_owners(channels: pd.DataFrame, rocket: RocketChat) -> pd.DataFrame:
 
     for idx, row in tqdm(channels.iterrows(), total=len(channels)):
         if row.name:
-            ret = rocket.channels_roles(room_id=row._id)
+            ret = rocket.channels_roles(room_id=row["_id"])
             if ret.status_code == 200:
                 # Success! => add the owners
                 owners = []
@@ -116,7 +116,7 @@ def get_params(filter_featured: bool = False, regexp: str = None) -> Dict[str, s
     return params
 
 
-if __name__ == "__main__":
+def main():
     args = parse_arguments()
     config = yaml.load(open(args.config), Loader=yaml.SafeLoader)
 
@@ -149,3 +149,7 @@ if __name__ == "__main__":
             print("Adding owners")
             channels_df = add_owners(channels_df, rocket)
         channels_df.to_csv(args.output_file, index=False)
+
+
+if __name__ == "__main__":
+    main()
