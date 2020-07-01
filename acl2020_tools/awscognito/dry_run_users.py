@@ -118,6 +118,9 @@ def parse_file(path):
         error_message = f"File {path} is not supported"
 
     if has_error is False:
+        # needs to clean up the Email field, sometimes it contains leading/ending spaces
+        dataframe.loc[:, "Email"] = dataframe.loc[:, "Email"].apply(lambda x: x.strip())
+
         # Change column headers to lowercase
         dataframe.columns = map(str.lower, dataframe.columns)
 
