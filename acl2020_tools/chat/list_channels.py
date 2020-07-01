@@ -89,7 +89,10 @@ def add_owners(channels: pd.DataFrame, rocket: RocketChat) -> pd.DataFrame:
 def get_params(filter_featured: bool = False, regexp: str = None) -> Dict[str, str]:
     # t: channel type (d: Direct chat, c: Chat, p: Private chat, l: Livechat)
     # msgs: number of messages
-    fields = ["name", "msgs", "usersCount", "featured", "t", "topic", "_updatedAt"]
+    fields = [
+        "name", "msgs", "usersCount", "featured", "t", "topic",
+        "description", "announcement", "_updatedAt"
+    ]
 
     query: Dict[str, Any] = {}
     if filter_featured:
