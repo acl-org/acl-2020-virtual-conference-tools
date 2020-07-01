@@ -26,7 +26,7 @@ def parse_arguments():
 
     parser.add_argument(
         "--add_owners",
-        default=False,
+        action='store_true',
         help="Add owners of each channel. Default: False",
     )
     parser.add_argument(
