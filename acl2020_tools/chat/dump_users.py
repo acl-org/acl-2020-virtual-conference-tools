@@ -27,13 +27,14 @@ def parse_arguments():
 
 
 def join_emails(emails):
-    if not isinstance(emails, dict):
+    if not isinstance(emails, list):
         return ""
-    delimiter = "|"
+    mails = [m["address"] for m in emails]
+    delimiter = ","
     assert all(
-        [delimiter not in address for address in emails["address"]]
+        [delimiter not in address for address in mails]
     ), "Character used for delimiter appears in an email address"
-    return delimiter.join(emails["address"])
+    return delimiter.join(mails)
 
 
 def get_all_users(rocket, fields_string):
@@ -43,21 +44,31 @@ def get_all_users(rocket, fields_string):
     while offset < total:
         response = rocket.users_list(
             fields=fields_string, offset=offset, count=offset_delta
-        ).json()
+        )
+        if response.status_code != 200:
+            print("There was an error")
+            print(response.reason)
+            break
+
+        response = response.json()
+
         total = response["total"]
         user_list.extend(response["users"])
         offset += response["count"]
         print("Loaded {}/{}".format(offset, total))
+
     return user_list
 
 
-def get_rocketchat_fields():
-    fields = dict()
-    fields["name"] = 1
-    fields["username"] = 1
-    fields["emails"] = {"address": 1}
-    fields["lastLogin"] = 1
-    fields["utcOffset"] = 1
+def get_rocketchat_fields(args):
+    fields = {
+        "name": 1,
+        "username": 1,
+        "emails": 0 if args.no_email else 1,
+        "utcOffset": 0 if args.no_timezone else 1,
+        "no_lastlogin": 0 if args.no_lastlogin else 1,
+    }
+
     return fields
 
 
@@ -72,20 +83,16 @@ def main():
             session=session,
         )
 
-        fields = get_rocketchat_fields()
-        if args.no_email:
-            fields["emails"]["address"] = 0
-        if args.no_timezone:
-            fields["utcOffset"] = 0
-        if args.no_lastlogin:
-            fields["lastLogin"] = 0
+        fields = get_rocketchat_fields(args)
+
         fields_string = json.dumps(fields)
 
+        print(fields_string)
         users = get_all_users(rocket, fields_string)
         df = pd.DataFrame(users)
 
-        if "email" in df:
-            df["email"] = df["email"].apply(join_emails)
+        if "emails" in df:
+            df["email"] = df["emails"].apply(join_emails)
         if "email" not in df and not args.no_email:
             print("WARN: emails not retrieved; do you have permission?")
         if "lastLogin" not in df and not args.no_lastlogin:
