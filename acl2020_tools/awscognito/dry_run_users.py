@@ -118,8 +118,8 @@ def parse_file(path):
         error_message = f"File {path} is not supported"
 
     if has_error is False:
-        # needs to clean up the Email field, sometimes it contains leading/ending spaces
-        dataframe.loc[:, "Email"] = dataframe.loc[:, "Email"].apply(lambda x: x.strip())
+        # Update column names
+        dataframe.columns = [x.lower().replace(" ", "_") for x in dataframe.columns]
 
         # Change column headers to lowercase
         dataframe.columns = map(str.lower, dataframe.columns)
@@ -130,6 +130,10 @@ def parse_file(path):
         invalid_rows = dataframe.loc[no_name | no_email]
         if len(invalid_rows.index) == 0:
             # No invalid records.  Let's go ahead
+            # needs to clean up the Email field, sometimes it contains leading/ending spaces
+            dataframe.loc[:, "email"] = dataframe.loc[:, "email"].apply(
+                lambda x: x.strip()
+            )
             users = [User(**kwargs) for kwargs in dataframe.to_dict(orient="records")]
         else:
             has_error = True
