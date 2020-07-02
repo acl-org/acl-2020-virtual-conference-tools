@@ -5,6 +5,7 @@ import pandas as pd
 import yaml
 from requests import sessions
 from rocketchat_API.rocketchat import RocketChat
+from tqdm.auto import tqdm
 
 offset_delta = 100
 
@@ -23,6 +24,8 @@ def parse_arguments():
     parser.add_argument(
         "--no-lastlogin", action="store_true", help="Don't pull user last login"
     )
+
+    parser.add_argument("--add-roles", action="store_true", help="Get user roles")
     return parser.parse_args()
 
 
@@ -72,6 +75,18 @@ def get_rocketchat_fields(args):
     return fields
 
 
+def add_roles(users, rocket):
+    print("Adding user roles")
+    for user in tqdm(users):
+        resp = rocket.users_info(user["_id"])
+
+        if not resp.ok:
+            print(f"Couldn't retrieve info of {user['name']} -- skipping")
+
+        user_info = resp.json()["user"]
+        user["roles"] = ",".join(user_info["roles"])
+
+
 def main():
     args = parse_arguments()
     config = yaml.load(open(args.config))
@@ -89,6 +104,10 @@ def main():
 
         print(fields_string)
         users = get_all_users(rocket, fields_string)
+
+        if args.add_roles:
+            add_roles(users, rocket)
+
         df = pd.DataFrame(users)
 
         if "emails" in df:
