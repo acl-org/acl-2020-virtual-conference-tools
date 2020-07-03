@@ -5,7 +5,6 @@ import yaml
 
 def main():
     bofs = []
-    first = False
 
     def str_presenter(dumper, data):
         if len(data) > 100:  # check for multiline string
