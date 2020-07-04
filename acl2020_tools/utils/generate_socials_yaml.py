@@ -44,7 +44,8 @@ def main():
                         schedule["link"] = row[key].split(": ")[-1].strip()
                         schedules.append(schedule)
             bof["schedules"] = schedules
-            bofs.append(bof)
+            if(schedules):
+                bofs.append(bof)
     print(len(bofs))
     with open("socials.yml", "w") as f:
         yaml.dump(bofs, f, default_flow_style=False)
