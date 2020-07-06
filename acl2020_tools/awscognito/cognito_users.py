@@ -23,6 +23,8 @@ class User:
     affiliation: str = ""
     timezone: str = ""
     country: str = ""
+    reg_id: str = ""
+    website: str = ""
 
     def name(self) -> str:
         """ Generate the name field """
@@ -127,6 +129,9 @@ def parse_file(path):
         error_message = f"File {path} is not supported"
 
     if has_error is False:
+        # Update column names
+        dataframe.columns = [x.lower().replace(" ", "_") for x in dataframe.columns]
+
         # Check invalid rows/records
         no_last_name = dataframe["last_name"].isnull()
         no_first_name = dataframe["first_name"].isnull()
@@ -134,6 +139,10 @@ def parse_file(path):
         invalid_rows = dataframe.loc[no_last_name | no_first_name | no_email]
         if len(invalid_rows.index) == 0:
             # No invalid records.  Let's go ahead
+            # Clean up the Email field to avoid any leading/ending spaces
+            dataframe.loc[:, "email"] = dataframe.loc[:, "email"].apply(
+                lambda x: x.strip()
+            )
             users = [User(**kwargs) for kwargs in dataframe.to_dict(orient="records")]
         else:
             has_error = True
