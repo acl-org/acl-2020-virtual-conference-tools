@@ -31,6 +31,13 @@ def parse_arguments():
         default=False,
         help="Show error details if there is any",
     )
+    parser.add_argument(
+        "-p",
+        "--password",
+        action="store",
+        default=False,
+        help="Set specified password to the users",
+    )
     parser.add_argument("aws_profile", help="The file contains AWS profile")
     parser.add_argument(
         "emails",
@@ -43,14 +50,23 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def reset_password(aws_profile, emails, is_debug=False):
+def reset_password(args):
     """ Load the profile data and reset password of users (by email address) """
+    aws_profile = args.aws_profile
+    emails = args.emails
+    is_debug = args.debug
+    password = args.password
     profile = yaml.load(open(aws_profile).read(), Loader=yaml.SafeLoader)
     client = cognito.init_client(profile)
     result = []
 
     for email in emails:
-        response = cognito.reset_user_password(client, profile, User(email=email))
+        if args.password:
+            response = cognito.set_user_password(
+                client, profile, User(email=email), password
+            )
+        else:
+            response = cognito.reset_user_password(client, profile, User(email=email))
         cognito.show_error_response(response, is_debug)
 
     return result
@@ -58,4 +74,4 @@ def reset_password(aws_profile, emails, is_debug=False):
 
 if __name__ == "__main__":
     args = parse_arguments()
-    users = reset_password(args.aws_profile, args.emails, args.debug)
+    users = reset_password(args)
