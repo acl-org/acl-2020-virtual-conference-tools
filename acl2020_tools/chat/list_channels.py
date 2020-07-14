@@ -23,6 +23,12 @@ def parse_arguments():
         default="./channels.csv",
         help="Output csv filepath. Default: ./channels.csv",
     )
+
+    parser.add_argument(
+        "--add_owners",
+        action="store_true",
+        help="Add owners of each channel. Default: False",
+    )
     parser.add_argument(
         "--regexp",
         "--regex",
@@ -60,10 +66,42 @@ def postprocess(channels: pd.DataFrame) -> pd.DataFrame:
     return channels
 
 
+def add_owners(channels: pd.DataFrame, rocket: RocketChat) -> pd.DataFrame:
+    channels["owners"] = None
+
+    for idx, row in tqdm(channels.iterrows(), total=len(channels)):
+        if row.name:
+            ret = rocket.channels_roles(room_id=row["_id"])
+            if ret.status_code == 200:
+                # Success! => add the owners
+                owners = []
+                user_roles = ret.json()["roles"]
+
+                for user_role in user_roles:
+                    if "owner" in user_role["roles"]:
+                        owners.append(user_role["u"]["username"])
+
+                channels.loc[idx, "owners"] = ",".join(owners)
+            else:
+                print(f"Problem retrieving {ret.name}")
+                print(ret.status_code, ret.reason)
+    return channels
+
+
 def get_params(filter_featured: bool = False, regexp: str = None) -> Dict[str, str]:
     # t: channel type (d: Direct chat, c: Chat, p: Private chat, l: Livechat)
     # msgs: number of messages
-    fields = ["name", "msgs", "usersCount", "featured", "t", "topic", "_updatedAt"]
+    fields = [
+        "name",
+        "msgs",
+        "usersCount",
+        "featured",
+        "t",
+        "topic",
+        "description",
+        "announcement",
+        "_updatedAt",
+    ]
 
     query: Dict[str, Any] = {}
     if filter_featured:
@@ -78,7 +116,7 @@ def get_params(filter_featured: bool = False, regexp: str = None) -> Dict[str, s
     return params
 
 
-if __name__ == "__main__":
+def main():
     args = parse_arguments()
     config = yaml.load(open(args.config), Loader=yaml.SafeLoader)
 
@@ -106,4 +144,12 @@ if __name__ == "__main__":
             channels_list.extend(channels_json["channels"])
 
         channels_df = postprocess(pd.DataFrame(channels_list))
+
+        if args.add_owners:
+            print("Adding owners")
+            channels_df = add_owners(channels_df, rocket)
         channels_df.to_csv(args.output_file, index=False)
+
+
+if __name__ == "__main__":
+    main()

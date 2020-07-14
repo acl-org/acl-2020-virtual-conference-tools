@@ -76,7 +76,8 @@ def load_data(args):
                 print(
                     f"user: {user.name()} <{user.email}>, "
                     + f"enabled: {user.enabled}, "
-                    + f"email_verified: {user.email_verified}"
+                    + f"email_verified: {user.email_verified}, "
+                    + f"user_status: {user.user_status}"
                 )
         if group:
             result.append(User(name=user.name(), email=user.email, committee=group))
