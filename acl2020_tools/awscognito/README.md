@@ -44,6 +44,11 @@ python cognito_list.py -h
 python cognito_reset_password.py aws_profile.yml example1@gmail.com example2@gmail.com ...
 ```
 
+* Set specified password to the user(s)
+```bash
+python cognito_reset_password.py -p new_password aws_profile.yml example1@gmail.com example2@gmail.com ...
+```
+
 * Create user(s) from .xlsx or .csv file.  This will set `email_verified` to true as well.  The second example will add user(s) to the specified group.  The last one removes user(s) from the specified group.
 ```bash
 python cognito_users.py user.csv aws_profile.yml

@@ -22,6 +22,7 @@ class CognitoUser:
     username: str
     email: str
     custom_name: str = ""
+    user_status: str = ""
     email_verified: str = ""
     enabled: bool = True
 
@@ -36,6 +37,7 @@ def __convert_aws_user__(aws_user):
     email_verified: str = ""
     enabled = aws_user["Enabled"]
     username = aws_user["Username"]
+    user_status = aws_user["UserStatus"]
     for attr in aws_user["Attributes"]:
         if attr["Name"] == "email":
             email = attr["Value"]
@@ -50,6 +52,7 @@ def __convert_aws_user__(aws_user):
         custom_name=custom_name,
         enabled=enabled,
         email_verified=email_verified,
+        user_status=user_status,
     )
     return user
 
@@ -301,8 +304,8 @@ def set_user_password(client, profile, user, password="N0t-permanent!"):
             Password=password,
             Permanent=False,
         )
-        # if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-        #     print(f"Password of user {user.email} was set successfully")
+        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+            print(f"Password of user {user.email} was set successfully")
         return response
     except client.exceptions.UserNotFoundException as error:
         print(f"User {user.email} does not exist")
