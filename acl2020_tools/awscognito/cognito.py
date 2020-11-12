@@ -100,7 +100,8 @@ def create_user(client, profile, user, resend=False):
                 UserAttributes=[
                     {"Name": "email", "Value": user.email},
                     {"Name": "email_verified", "Value": "true"},
-                    {"Name": "custom:name", "Value": name},
+                    {"Name": "name", "Value": name},
+                    # {"Name": "custom:name", "Value": name},
                 ],
             )
         if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
